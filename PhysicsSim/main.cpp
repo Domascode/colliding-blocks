@@ -70,6 +70,8 @@ int main()
     collCounterText.setFillColor(sf::Color::White);
     collCounterText.setPosition(sf::Vector2f(wpos_x - 300.f, wpos_y + 250.f));
 
+    const float timeStep = 1 / 2000.f;
+
     while (window.isOpen())
     {
         while (const std::optional event = window.pollEvent())
@@ -79,43 +81,49 @@ int main()
         }
 
         float deltaTime = clock.restart().asSeconds();
-        float movement1 = speed1 * deltaTime;
-        float movement2 = speed2 * deltaTime;
-        const float velocity1 = -movement1;
-        const float velocity2 = -movement2;
 
-        sf::Vector2f previousPos1 = rect1.getPosition();
-        sf::Vector2f previousPos2 = rect2.getPosition();
-        rect2.move(sf::Vector2f(velocity2, 0.f));
-        rect1.move(sf::Vector2f(velocity1, 0.f));
-
-        sf::FloatRect rect2Bounds = rect2.getGlobalBounds();
-        sf::FloatRect rect1Bounds = rect1.getGlobalBounds();
-        sf::FloatRect wallBounds = border_y.getGlobalBounds();
-
-        if (rect1Bounds.findIntersection(wallBounds).has_value())
+        while (deltaTime > 0.f)
         {
-            rect1.setPosition(previousPos1);
-            //rect2.move(sf::Vector2f(velocity, 0.f));
-            speed1 = -speed1;
-			collCounter++;
-            actualCounterText.setString(std::to_string(collCounter));
-        }
-        if (rect2Bounds.findIntersection(rect1Bounds).has_value())
-        {
-            rect1.setPosition(previousPos1);
-            rect2.setPosition(previousPos2);
-            
-            float newSpeed1 = (speed1 * (mass1 - mass2) + 2 * mass2 * speed2) / (mass1 + mass2);
-            float newSpeed2 = (speed2 * (mass2 - mass1) + 2 * mass1 * speed1) / (mass1 + mass2);
+            float step = std::min(deltaTime, timeStep);
+            deltaTime -= step;
 
-            speed1 = newSpeed1;
-            speed2 = newSpeed2;
+            float movement1 = speed1 * deltaTime;
+            float movement2 = speed2 * deltaTime;
+            const float velocity1 = -movement1;
+            const float velocity2 = -movement2;
 
-			collCounter++;
-            actualCounterText.setString(std::to_string(collCounter));
+            sf::Vector2f previousPos1 = rect1.getPosition();
+            sf::Vector2f previousPos2 = rect2.getPosition();
+            rect2.move(sf::Vector2f(velocity2, 0.f));
+            rect1.move(sf::Vector2f(velocity1, 0.f));
+
+            sf::FloatRect rect2Bounds = rect2.getGlobalBounds();
+            sf::FloatRect rect1Bounds = rect1.getGlobalBounds();
+            sf::FloatRect wallBounds = border_y.getGlobalBounds();
+
+            if (rect1Bounds.findIntersection(wallBounds).has_value())
+            {
+                rect1.setPosition(previousPos1);
+                //rect2.move(sf::Vector2f(velocity, 0.f));
+                speed1 = -speed1;
+                collCounter++;
+                actualCounterText.setString(std::to_string(collCounter));
+            }
+            if (rect2Bounds.findIntersection(rect1Bounds).has_value())
+            {
+                rect1.setPosition(previousPos1);
+                rect2.setPosition(previousPos2);
+
+                float newSpeed1 = (speed1 * (mass1 - mass2) + 2 * mass2 * speed2) / (mass1 + mass2);
+                float newSpeed2 = (speed2 * (mass2 - mass1) + 2 * mass1 * speed1) / (mass1 + mass2);
+
+                speed1 = newSpeed1;
+                speed2 = newSpeed2;
+
+                collCounter++;
+                actualCounterText.setString(std::to_string(collCounter));
+            }
         }
-        
         window.clear();
         window.draw(rect1);
         window.draw(rect2);
