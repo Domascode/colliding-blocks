@@ -1,0 +1,4 @@
+TO-DO:
+
+- Make the walls able to handle high masses
+- Potential optimization changes
